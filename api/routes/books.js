@@ -47,9 +47,9 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.get("/:id", (req, res, next) => {
+router.get("/:id", async (req, res, next) => {
   const status = 200;
-  const response = books.find(({ id }) => id === req.params.id);
+  const response = await Book.findById(req.params.id);
 
   res.json({ status, response });
 });

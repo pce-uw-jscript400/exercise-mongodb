@@ -1,72 +1,89 @@
 const router = require('express').Router()
-const { generate: generateId } = require('shortid')
+// const { generate: generateId } = require('shortid') - don't need this anymore
+const Books = require('../models/books')
 
-const books = [
-  {
-    id: 'j9U3iNIQi',
-    title: 'The Colour of Magic',
-    published: 1983,
-    authors: [
-      {
-        name: 'Sir Terry Pratchett',
-        dob: '04-28-1948'
-      }
-    ]
-  },
-  {
-    id: 'ubQnXOfJV',
-    title: 'Stardust',
-    published: 1997,
-    authors: [
-      {
-        name: 'Neil Gaiman',
-        dob: '11-10-1960'
-      }
-    ]
-  }
-];
+// sample data
+// const books = [
+//   {
+//     id: 'j9U3iNIQi',
+//     title: 'The Colour of Magic',
+//     published: 1983,
+//     authors: [
+//       {
+//         name: 'Sir Terry Pratchett',
+//         dob: '04-28-1948'
+//       }
+//     ]
+//   },
+//   {
+//     id: 'ubQnXOfJV',
+//     title: 'Stardust',
+//     published: 1997,
+//     authors: [
+//       {
+//         name: 'Neil Gaiman',
+//         dob: '11-10-1960'
+//       }
+//     ]
+//   }
+// ];
 
-router.get('/', (req, res, next) => {
+// get all books
+router.get('/', async (req, res, next) => {
   const status = 200
-  const response = books
-  
+  // get all books
+  const response = await Books.find()
+  // return status and all books
   res.json({ status, response })
 })
 
-router.post('/', (req, res, next) => {
+// add books
+router.post('/', async (req, res, next) => {
   const status = 201
-  
-  books.push({ id: generateId(), ...req.body })
-  const response = books
-  
+  // add book entry
+  Books.create(req.body).then(response => {
+    res.json({ status, response })
+  }).catch(error => {
+    // report back error if can't add it
+    console.error(error)
+    const e = new Error('Something went wrong!')
+    e.status = 400
+    next(e)
+  })
+})
+
+// get specific book by ID
+router.get('/:id', async (req, res, next) => {
+  const status = 200
+  // find book by ID
+  const response = await Books.findOne({ _id: req.params.id })
+  // return status and book entry
   res.json({ status, response })
 })
 
-router.get('/:id', (req, res, next) => {
-  const status = 200
-  const response = books.find(({ id }) => id === req.params.id)
-
+// update a book
+router.put('/:id', async (req, res, next) => {
+  const status = 201
+  // find book by ID and update it with new data
+  const response = await Books.findOneAndUpdate({ 
+    _id: req.params.id 
+  }, { 
+    title: req.body.title,
+    published: req.body.published,
+    authors: req.body.authors
+  }, { 
+    new: true 
+  })
+  // return status and the updated book entry
   res.json({ status, response })
 })
 
-router.put('/:id', (req, res, next) => {
+// delete a book
+router.delete('/:id', async (req, res, next) => {
   const status = 200
-  const response = { id: req.params.id, ...req.body }
-  const single = books.find(({ id }) => id === req.params.id)
-  const index = books.indexOf(single)
-
-  books.splice(index, 1, response)
-  
-  res.json({ status, response })
-})
-
-router.delete('/:id', (req, res, next) => {
-  const status = 200
-  const response = books.find(({ id }) => id === req.params.id)
-  const index = books.indexOf(response)
-
-  books.splice(index, 1)
-
+  // find the book by ID and deelte it
+  const response = await Books.findOneAndDelete({ _id: req.params.id })
+  // return status and deleted entry
   res.json({ status, response })
 })
 

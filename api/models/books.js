@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
+// Define the schema for books API
 var schema = new Schema({
     _id : String,
     title : {
@@ -11,7 +12,7 @@ var schema = new Schema({
         type : Number,
         required : true
     },
-    author : [{
+    authors : [{
         name : String,
         dob : String
     }]

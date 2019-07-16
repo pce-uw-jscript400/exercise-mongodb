@@ -49,4 +49,43 @@ router.delete('/:id', async (req, res, next) => {
   res.json({ status, response })
 })
 
+router.get('/:bookId/authors', async (req, res, next) => {
+  const status = 200
+  const response = await Books.findById(req.params.bookId, {author : 1})
+
+  res.json({status, response})
+})
+
+router.get('/:bookId/authors/:authorId', async (req, res, next) => {
+  const status = 200
+  const response = await Books.find( {"_id" :req.params.bookId} , {author : {$elemMatch : {_id : req.params.authorId}}})
+
+  res.json({status, response})
+})
+
+router.post('/:bookId/authors', async (req, res, next) =>{
+  const status = 201
+  const response = await Books.findByIdAndUpdate(req.params.bookId, {$push : {"author" : req.body}}, {new : true})
+
+  res.json({status, response})
+})
+
+router.put('/:bookId/authors/:authorId', async (req, res, next) => {
+  const status = 200
+  const response = await Books.updateOne({"_id" : req.params.bookId, "author._id" : req.params.authorId}, {$set : {"author.$" : req.body}}, {new : true})
+
+  res.json({status, response})
+})
+
+router.delete('/:bookId/authors/:authorId', async (req, res, next) => {
+  const status = 200
+  console.log(req.params.bookId)
+  console.log(req.params.authorId)
+  const response = await Books.updateOne({"_id" : req.params.bookId, "author._id" : req.params.authorId}, {$pull : {"author.$" : 1}}, {new : true})
+ // const response = await Books.updateOne({"_id" : req.params.bookId, "author._id" : req.params.authorId}, {$pull : {"author.$" : 1}}, {new : true})
+  //const final = await Books.updateOne({}, {$pull:{"author.$":null}})
+
+  res.json({status, response})
+})
+
 module.exports = router

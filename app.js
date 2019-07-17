@@ -20,6 +20,7 @@ app.use(require('body-parser').json())
 
 // Routes
 app.use('/api/books', require('./api/routes/books'))
+app.use('/api/books/:bookId/authors', require('./api/routes/books.authors'))
 
 // Not Found Handler
 app.use((req, res, next) => {

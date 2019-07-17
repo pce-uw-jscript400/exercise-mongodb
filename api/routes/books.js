@@ -1,6 +1,6 @@
 const router = require('express').Router()
-const { generate: generateId } = require('shortid')
-
+// const { generate: generateId } = require('shortid')
+const Books = require('../models/books')
 const books = [
   {
     id: 'j9U3iNIQi',
@@ -26,20 +26,22 @@ const books = [
   }
 ];
 
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
   const status = 200
-  const response = books
+  const response =  await Books.find()
   
   res.json({ status, response })
 })
 
-router.post('/', (req, res, next) => {
+router.post('/', async (req, res, next) => {
   const status = 201
-  
-  books.push({ id: generateId(), ...req.body })
-  const response = books
-  
-  res.json({ status, response })
+
+
+    await Books.create(req.body).then(response =>{
+      res.json({ status, response })
+    })
+    
+    
 })
 
 router.get('/:id', (req, res, next) => {

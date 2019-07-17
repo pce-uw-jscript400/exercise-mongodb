@@ -1,71 +1,152 @@
 const router = require('express').Router()
-const { generate: generateId } = require('shortid')
+const Book = require('../models/book');
 
-const books = [
-  {
-    id: 'j9U3iNIQi',
-    title: 'The Colour of Magic',
-    published: 1983,
-    authors: [
-      {
-        name: 'Sir Terry Pratchett',
-        dob: '04-28-1948'
-      }
-    ]
-  },
-  {
-    id: 'ubQnXOfJV',
-    title: 'Stardust',
-    published: 1997,
-    authors: [
-      {
-        name: 'Neil Gaiman',
-        dob: '11-10-1960'
-      }
-    ]
+router.get('/', async (req, res, next) => {
+  const status = 200
+  const response = await Book.find()
+  
+  res.json({ status, response })
+})
+
+// GET /api/books/:bookId/authors
+router.get('/:id/authors', async (req, res, next) => {
+  const status = 200
+  const response = await Book.findById(req.params.id).select( 'authors')
+  
+  res.json({ status, response })
+})
+
+// GET /api/books/:bookId/authors/:authorId
+router.get('/:id/authors/:authorId', async (req, res, next) => {
+  const status = 200
+  try{
+    const response = await Book.find({ _id: req.params.id, "authors._id": req.params.authorId}).select( 'authors')
+  }catch(error){
+    if (error.name === 'CastError') {
+      res.status(400).json({ status: 400, response: 'Invalid ObjectId' })
+    } else {
+      res.status(500).json({ status: 500, response: error.message })
+    }
   }
-];
-
-router.get('/', (req, res, next) => {
-  const status = 200
-  const response = books
-  
   res.json({ status, response })
 })
 
-router.post('/', (req, res, next) => {
+// POST /api/books/:bookId/authors
+router.post('/:id/authors', async (req, res, next) => {
   const status = 201
-  
-  books.push({ id: generateId(), ...req.body })
-  const response = books
-  
+  let response;
+  try {
+    reponse = await Book.findOneAndUpdate(
+      { _id: req.params.id },
+      { $push: { "authors": req.body } },
+      { new: true }
+    );
+    res.status(status).json({ status, response })
+  } catch (error) {
+    console.log(error)
+    if (error.name === 'ValidationError') {
+      res.status(400).json({ status: 400, response: error.message })
+    } else {
+      res.status(500).json({ status: 500, response: error.message })
+    }
+  }
+})
+
+// PUT /api/books/:bookId/authors/:authorId
+router.put('/:id/authors/:authorId', async (req, res, next) => {
+  const status = 200
+  if(!('name' in req.body) || !('dob' in req.body)) {
+    res.status(400).json({ status: 400, response: "Name and dob are required" })
+  }else{
+    let response;
+    try {
+      reponse = await Book.findOneAndUpdate(
+        { _id: req.params.id, 'authors._id': req.params.authorId },
+        { $set: {'authors.$.name': req.body.name , 'authors.$.dob': req.body.dob}},
+        { new: true }
+      )
+      res.status(status).json({ status, response })
+    } catch (error) {
+      console.log(error)
+      if (error.name === 'ValidationError') {
+        res.status(400).json({ status: 400, response: error.message })
+      } else {
+        res.status(500).json({ status: 500, response: error.message })
+      }
+    }
+  }
+})
+
+// DELETE /api/books/:bookId/authors/:authorId
+router.delete('/:id/authors/:authorId', async (req, res, next) => {
+  const status = 200
+  let response;
+  try {
+    reponse = await Book.findOneAndUpdate(
+      {  _id: req.params.id },
+      { $pull: { 'authors': { _id: req.params.authorId} } },
+      { new: true }
+    );
+    res.status(status).json({ status, response })
+  } catch (error) {
+    console.log(error)
+    if (error.name === 'ValidationError') {
+      res.status(400).json({ status: 400, response: error.message })
+    } else {
+      res.status(500).json({ status: 500, response: error.message })
+    }
+  }
+})
+
+
+router.post('/', async (req, res, next) => {
+  const status = 201
+  try {
+    const response = await Book.create(req.body);
+    res.json({ status, response })
+  } catch (error) {
+    console.log(error.name)
+    if (error.name === 'ValidationError') {
+      res.status(400).json({ status: 400, response: error.message })
+    } else {
+      res.status(500).json({ status: 500, response: error.message })
+    }
+  }
+})
+
+router.get('/:id', async (req, res, next) => {
+  const status = 200
+  const response = await Book.findById(req.params.id)
+
   res.json({ status, response })
 })
 
-router.get('/:id', (req, res, next) => {
+router.put('/:id', async (req, res, next) => {
   const status = 200
-  const response = books.find(({ id }) => id === req.params.id)
-
-  res.json({ status, response })
+  let response;
+  try {
+    reponse = await Book.findOneAndUpdate(
+      { _id: req.params.id },
+      { $set: req.body },
+      { new: true }
+    ).select('_id title start_year season_count');
+    res.json({ status, response })
+  }catch (error) {
+    console.log(error)
+    if (error.name === 'ValidationError') {
+      res.status(400).json({ status: 400, response: error.message })
+    } else {
+      res.status(500).json({ status: 500, response: error.message })
+    }
+  }
 })
 
-router.put('/:id', (req, res, next) => {
+router.delete('/:id', async (req, res, next) => {
   const status = 200
-  const response = { id: req.params.id, ...req.body }
-  const single = books.find(({ id }) => id === req.params.id)
-  const index = books.indexOf(single)
-
-  books.splice(index, 1, response)
-  
-  res.json({ status, response })
-})
-
-router.delete('/:id', (req, res, next) => {
-  const status = 200
-  const response = books.find(({ id }) => id === req.params.id)
-  const index = books.indexOf(response)
-
-  books.splice(index, 1)
+  let response;
+  reponse = await Book.findOneAndDelete(
+    { _id: req.params.id }
+  );
 
   res.json({ status, response })
 })

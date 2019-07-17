@@ -1,72 +1,105 @@
 const router = require('express').Router()
 const { generate: generateId } = require('shortid')
+const Books = require('../models/book')
+var mongoose = require('mongoose');
 
-const books = [
-  {
-    id: 'j9U3iNIQi',
-    title: 'The Colour of Magic',
-    published: 1983,
-    authors: [
-      {
-        name: 'Sir Terry Pratchett',
-        dob: '04-28-1948'
-      }
-    ]
-  },
-  {
-    id: 'ubQnXOfJV',
-    title: 'Stardust',
-    published: 1997,
-    authors: [
-      {
-        name: 'Neil Gaiman',
-        dob: '11-10-1960'
-      }
-    ]
-  }
-];
+// Additionally, add a new set of routes for the authors. For example:
+// ```
+// DELETE /api/books/:bookId/authors/:authorId
+// ```
 
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
   const status = 200
-  const response = books
-  
+  const response = await Books.find()
+
   res.json({ status, response })
 })
 
-router.post('/', (req, res, next) => {
+router.post('/:bookId/authors', async (req, res, next) => {
   const status = 201
-  
-  books.push({ id: generateId(), ...req.body })
-  const response = books
-  
+  const author = req.body
+  const response = await Books.findOneAndUpdate({
+    _id: req.params.bookId },
+    { $push: { authors: author } },
+    { new: true }
+  )
   res.json({ status, response })
 })
 
-router.get('/:id', (req, res, next) => {
+router.post('/', async (req, res, next) => {
+  const status = 201
+
+  try {
+    const response = await Books.create(
+      req.body
+    )
+    res.json({ status, response })
+  } catch (error) {
+    const e = new Error(error)
+    e.status = 400
+    next(e)
+  }
+})
+
+router.get('/:id/authors/:authorId', async (req, res, next) => {
   const status = 200
-  const response = books.find(({ id }) => id === req.params.id)
+  const response = await Books.findById(req.params.id)
+  const authors = response.authors
+  const author = authors.find(author => author['_id'] == req.params.authorId)
+  res.json({ status, author })
+})
+
+router.get('/:id/authors', async (req, res, next) => {
+  const status = 200
+  const response = await Books.findById(req.params.id)
+  const authors = response.authors
+  res.json({ status, authors })
+})
+
+
+router.get('/:id', async (req, res, next) => {
+  const status = 200
+  const response = await Books.findById(req.params.id)
 
   res.json({ status, response })
 })
 
-router.put('/:id', (req, res, next) => {
+router.put('/:bookId/authors/:authorId', async (req, res, next) => {
   const status = 200
-  const response = { id: req.params.id, ...req.body }
-  const single = books.find(({ id }) => id === req.params.id)
-  const index = books.indexOf(single)
+  const book = await Books.findById(req.params.bookId)
+  const author = book.authors.id(req.params.authorId)
+  Object.assign(author, req.body)
+  await book.save()
 
-  books.splice(index, 1, response)
-  
+  res.json({ status, author })
+})
+
+router.put('/:id', async (req, res, next) => {
+  const status = 200
+
+  const response = await Books.findOneAndUpdate({
+    _id: req.params.id },
+    {...req.body},
+    { new: true }
+  )
   res.json({ status, response })
 })
 
-router.delete('/:id', (req, res, next) => {
+router.delete('/:bookId/authors/:authorId', async (req, res, next) => {
   const status = 200
-  const response = books.find(({ id }) => id === req.params.id)
-  const index = books.indexOf(response)
+  const book = await Books.findById(req.params.bookId)
+  const author = book.authors.id(req.params.authorId).remove()
 
-  books.splice(index, 1)
+  await book.save()
 
+  res.status(status).json({ status, author })
+})
+
+router.delete('/:id', async (req, res, next) => {
+  const status = 200
+  const response = await Books.findOneAndDelete({
+    _id: req.params.id
+  })
   res.json({ status, response })
 })
 

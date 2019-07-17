@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { generate: generateId } = require('shortid')
+const Books = require('../../models/books')
 
 const books = [
   {
@@ -26,47 +26,47 @@ const books = [
   }
 ];
 
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
   const status = 200
-  const response = books
-  
-  res.json({ status, response })
+  Books.find().then(response => {
+    res.json({ status, response })
+  })
 })
 
-router.post('/', (req, res, next) => {
+router.post('/', async (req, res, next) => {
   const status = 201
-  
-  books.push({ id: generateId(), ...req.body })
-  const response = books
-  
+  try {
+    const response = await Books.create(req.body)
+    res.json({ status, response})
+  } catch (error) {
+    console.error(error)
+    const e = new Error('Required information is missing!')
+    e.status = 400
+    next(e)
+  }
+})
+
+router.get('/:id', async (req, res, next) => {
+  const status = 200
+  const response = await Books.findById(req.params.id);
   res.json({ status, response })
 })
 
-router.get('/:id', (req, res, next) => {
+router.put('/:id', async (req, res, next) => {
   const status = 200
-  const response = books.find(({ id }) => id === req.params.id)
 
+  const response = await Books.findOneAndUpdate({
+    _id: req.params.id
+  }, {
+    title: req.body.title
+  }, {new: true},
   res.json({ status, response })
+  )
 })
 
-router.put('/:id', (req, res, next) => {
+router.delete('/:id', async (req, res, next) => {
   const status = 200
-  const response = { id: req.params.id, ...req.body }
-  const single = books.find(({ id }) => id === req.params.id)
-  const index = books.indexOf(single)
-
-  books.splice(index, 1, response)
-  
-  res.json({ status, response })
-})
-
-router.delete('/:id', (req, res, next) => {
-  const status = 200
-  const response = books.find(({ id }) => id === req.params.id)
-  const index = books.indexOf(response)
-
-  books.splice(index, 1)
-
+  const response = await Books.findOneAndDelete({ _id: req.params.id })
   res.json({ status, response })
 })
 

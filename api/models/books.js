@@ -1,4 +1,5 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const Author = require('./author').schema;
 const schema = new mongoose.Schema({
     title: {
         type:String,
@@ -8,10 +9,10 @@ const schema = new mongoose.Schema({
         type:Number,
         required:true
     },
-    authors: [{
-        name: String,
-        dob: Date
-    }]
-})
+    authors: {
+        type: [Author],
+        required:false
+    }
+});
 
-module.exports = mongoose.model('Books', schema);
+module.exports = mongoose.model('Books', schema) 

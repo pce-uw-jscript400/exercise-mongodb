@@ -17,7 +17,13 @@ const booksSchema = new Schema({
                 type: String
             },
             dob: {
-                type: String
+                type: String,
+                validate: {
+                    validator: function(v) {
+                    return /\d{2}-\d{2}-\d{4}/.test(v);
+                    },
+                    message: props => `${props.value} is not a valid dob!`
+                },
             }
         }
     ]

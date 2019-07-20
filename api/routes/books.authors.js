@@ -10,13 +10,20 @@ router.get('/', async (req, res, next) =>{
 
 router.post('/', async (req, res, next) => {
     const status = 201
-    const book = await Books.findById(req.params.bookId)
+    try {
+        const book = await Books.findById(req.params.bookId)
 
-    book.authors.push(req.body)
-    await book.save()
+        book.authors.push(req.body)
+        await book.save()
 
-    const author = book.authors[book.authors.length - 1]
-    res.status(status).json({status, author})
+        const author = book.authors[book.authors.length - 1]
+        res.status(status).json({status, author})
+    } catch (e) {
+        err = new Error(e.message)
+        err.status = 404
+        next(err)
+    }
+    
 })
 
 router.get('/:id', async (req, res, next) =>{

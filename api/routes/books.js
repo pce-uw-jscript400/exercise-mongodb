@@ -35,9 +35,8 @@ router.get('/:id', async (req, res, next) => {
 router.put('/:id', async (req, res, next) => {
   const status = 200
 
-  const response = await Books.findOneAndUpdate({
-    _id: req.params.id,
-  }, {
+  const response = await Books.findOneAndUpdate(
+    {_id: req.params.id,}, {
     title: req.body.title,
     published: req.body.published,
     authors: req.body.authors

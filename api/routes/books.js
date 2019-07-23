@@ -51,7 +51,7 @@ router.post('/', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
   const status = 200
-  const response = await Books.findById(req.params.id)
+  const response = await Books.findById(req.params.id).select('_id title published authors')
 
   res.json({ status, response })
 })
@@ -68,6 +68,29 @@ router.put('/:id', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   const status = 200
   const response = await Books.findOneAndDelete({ _id: req.params.id })
+
+  res.json({ status, response })
+})
+
+router.get('/:bookId/authors/:id', async (req, res, next) => {
+  const status = 200
+  const response = await Books.authors.findById(req.params.id)
+
+  res.json({ status, response })
+})
+
+router.put('/:bookId/authors/:id', async (req, res, next) => {
+  const status = 200
+  const query = {_id:req.params.id}
+  const options = {new:true}
+  const response = await Books.authors.findOneAndUpdate(query, req.body, options)
+  
+  res.json({ status, response })
+})
+
+router.delete('/:bookId/authors/:id', async (req, res, next) => {
+  const status = 200
+  const response = await Books.authors.findOneAndDelete({ _id: req.params.id })
 
   res.json({ status, response })
 })

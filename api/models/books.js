@@ -7,10 +7,7 @@ const schema = new mongoose.Schema({
     },
     published: Number,
     authors: [{
-        name: {
-            type: String,
-            required: true
-        },
+        name: String,
         dob: Number
     }]
     }, {

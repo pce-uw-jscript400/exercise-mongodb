@@ -72,27 +72,27 @@ router.delete('/:id', async (req, res, next) => {
   res.json({ status, response })
 })
 
-router.get('/:bookId/authors/:id', async (req, res, next) => {
-  const status = 200
-  const response = await Books.authors.findById(req.params.id)
+// router.get('/:bookId/authors/:id', async (req, res, next) => {
+//   const status = 200
+//   const response = await Books.authors.findById(req.params.id)
 
-  res.json({ status, response })
-})
+//   res.json({ status, response })
+// })
 
-router.put('/:bookId/authors/:id', async (req, res, next) => {
-  const status = 200
-  const query = {_id:req.params.id}
-  const options = {new:true}
-  const response = await Books.authors.findOneAndUpdate(query, req.body, options)
+// router.put('/:bookId/authors/:id', async (req, res, next) => {
+//   const status = 200
+//   const query = {_id:req.params.id}
+//   const options = {new:true}
+//   const response = await Books.authors.findOneAndUpdate(query, req.body, options)
   
-  res.json({ status, response })
-})
+//   res.json({ status, response })
+// })
 
-router.delete('/:bookId/authors/:id', async (req, res, next) => {
-  const status = 200
-  const response = await Books.authors.findOneAndDelete({ _id: req.params.id })
+// router.delete('/:bookId/authors/:id', async (req, res, next) => {
+//   const status = 200
+//   const response = await Books.authors.findOneAndDelete({ _id: req.params.id })
 
-  res.json({ status, response })
-})
+//   res.json({ status, response })
+// })
 
 module.exports = router

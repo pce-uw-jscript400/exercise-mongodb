@@ -23,11 +23,10 @@ router.post('/', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
   const status = 200
-  const books = await Books.findById(req.params.bookId)
-  const author = books.authors.id(req.params.id)
-  await books.save()
+  const {authors} = await Books.findById(req.params.bookId).select('authors')
+  const author = authors.id(req.params.id)
 
-  res.status(status).json({ status, author });
+  res.json({ status, author })
 })
 
 router.put('/:id', async (req, res, next) => {

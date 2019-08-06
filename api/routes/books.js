@@ -76,18 +76,21 @@ router.delete('/api/books/:id', async (req, res, next) => {
 
 router.get('/api/books/:bookId/authors', async (req, res, next) => {
   const status = 200
-  const response = await Books.find().select("authors")
-
+  const response = await Books.findById(req.params.bookId).select("authors")
+ 
   res.json({ status, response })
 })
 
-router.get('/api/books/:bookId/authors/:authorID', async (req, res, next) => {
+router.get('/api/books/:bookId/authors/:authorId', async (req, res, next) => {
   const status = 200
-
+  const book = req.params.bookId
+  const author = req.params.authorId
+  console.log(author)
+  console.log(book)
   try{
-    await Books.findById({ _id: req.params.id }).then(response => {
-      res.json({ status, response })
-    })  
+    await Books.find({ _id: book, _id: author}).then(response => {
+      res.json({ status, response})
+    })
   } catch(error){
     console.log(error)
     const e = new Error('Not working!! grrrrr.')

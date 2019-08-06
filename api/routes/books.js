@@ -76,7 +76,7 @@ router.delete('/api/books/:id', async (req, res, next) => {
 
 router.get('/api/books/:bookId/authors', async (req, res, next) => {
   const status = 200
-  const response = await Books.findById(req.params.bookId).select("authors")
+  const response = await Books.findById(req.params.bookId).select('authors.name -_id')
  
   res.json({ status, response })
 })
@@ -87,16 +87,46 @@ router.get('/api/books/:bookId/authors/:authorId', async (req, res, next) => {
   const author = req.params.authorId
   console.log(author)
   console.log(book)
-  try{
-    await Books.find({ _id: book, _id: author}).then(response => {
-      res.json({ status, response})
-    })
-  } catch(error){
-    console.log(error)
-    const e = new Error('Not working!! grrrrr.')
-    e.status = 400
-    next(e)
-  }
+  // try{
+  //   await Books.findById({ _id: book}, (Author) => {
+  //     findById(author).select('name')
+  //   }).then(response => {
+  //     res.json({ status, response})
+  //   })
+  // } catch(error){
+  //   console.log(error)
+  //   const e = new Error('Not working!! grrrrr.')
+  //   e.status = 400
+  //   next(e)
+  // }
+  await Books.findOne({ _id: book, 'authors._id' : author }, {"authors.$": 1}, (error, response) => {
+    if (error){ throw(error); }
+    // const Author = where(response.authors , { id : authorId });
+    res.json({status, response})
+  })
+
+})
+
+router.post('/api/books/:bookId/authors', async (req, res, next) => {
+  const status = 200
+  const book = req.params.bookId
+  await Books.findOne({ _id:book }).then((err, add) => {
+    if(err){throw(err)}
+    const Author = req.body
+    console.log(Author)
+  }).catch(err => console.error(err))
+  
+})
+
+router.put('/api/books/:bookId/authors/:authorId', async (req, res, next) => {
+  const status = 200
+  const book = req.params.bookId
+  const author = req.params.authorId
+  
+  //Works first time then sometimes it doesn't work.
+  await Books.findById(req.params.bookId).create({'author': req.body}).then(response => {
+    res.json({ status, response })
+  })
 })
 
 module.exports = router

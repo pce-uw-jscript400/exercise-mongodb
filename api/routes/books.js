@@ -83,28 +83,18 @@ router.get('/api/books/:bookId/authors', async (req, res, next) => {
 
 router.get('/api/books/:bookId/authors/:authorId', async (req, res, next) => {
   const status = 200
-  const book = req.params.bookId
-  const author = req.params.authorId
-  console.log(author)
+  const query = { _id: req.params.bookId }
+  const id = { _id: req.params.authorId }
+  const book = await Books.findById(query)
+  
+  console.log(id)
   console.log(book)
-  // try{
-  //   await Books.findById({ _id: book}, (Author) => {
-  //     findById(author).select('name')
-  //   }).then(response => {
-  //     res.json({ status, response})
-  //   })
-  // } catch(error){
-  //   console.log(error)
-  //   const e = new Error('Not working!! grrrrr.')
-  //   e.status = 400
-  //   next(e)
-  // }
-  await Books.findOne({ _id: book, 'authors._id' : author }, {"authors.$": 1}, (error, response) => {
-    if (error){ throw(error); }
-    // const Author = where(response.authors , { id : authorId });
-    res.json({status, response})
-  })
-
+  const authorQuery = book.authors.find()
+  
+  console.log(authorQuery)
+  
+  // console.log(Author)
+  // res.json({ status, Author })
 })
 
 router.post('/api/books/:bookId/authors', async (req, res, next) => {
@@ -127,6 +117,15 @@ router.put('/api/books/:bookId/authors/:authorId', async (req, res, next) => {
   await Books.findById(req.params.bookId).create({'author': req.body}).then(response => {
     res.json({ status, response })
   })
+})
+
+router.delete('/api/books/:bookId/authors/:authorId', async (req, res, next) => {
+  const status = 200
+  const book = await Books.findById({ _Id: req.params.bookId })
+
+  const response = book.authors.remove({ _Id: req.params.authorId })
+
+  res.json({ status, response })
 })
 
 module.exports = router

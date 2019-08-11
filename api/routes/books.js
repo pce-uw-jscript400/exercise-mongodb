@@ -100,12 +100,13 @@ router.get('/api/books/:bookId/authors/:authorId', async (req, res, next) => {
 router.post('/api/books/:bookId/authors', async (req, res, next) => {
   const status = 200
   const book = req.params.bookId
-  await Books.findOne({ _id:book }).then((err, add) => {
+  const response =  await Books.findOneAndUpdate({ _id:book }).then((err, add) => {
     if(err){throw(err)}
     const Author = req.body
     console.log(Author)
   }).catch(err => console.error(err))
   
+  res.json({ status, response })
 })
 
 router.put('/api/books/:bookId/authors/:authorId', async (req, res, next) => {
